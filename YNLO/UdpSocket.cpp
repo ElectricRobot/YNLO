@@ -172,9 +172,18 @@ UdpServer::UdpServer() :is_init_(false)
 {
     addr_len_ = sizeof(their_addr_);
 }
-UdpServer::~UdpServer() {}
+UdpServer::~UdpServer() {
+    if(is_init_)
+        close(sockfd_);
+}
 
 bool UdpServer::Init(int port) {
+    if(is_init_ == true) {
+        std::cerr << "Socket is binding now." << std::endl
+                  << "If you want to reinit, please call Init(int) after Clear()" << std::endl;
+        return true;
+    }
+
     // convert int port to string
     port_ = port;
     std::stringstream ss;
@@ -218,20 +227,58 @@ bool UdpServer::Init(int port) {
         std::cerr << "failed to bind socket" << std::endl;
         return false;
     }
-
+    is_init_ = true;
     freeaddrinfo(servinfo_);
     return true;
 }
 
-void UdpServer::Close(){
+int UdpServer::RecvFrom(char* buf, int max_size, std::string* their_ip) {
+    if(is_init_ == false) {
+        std::cerr << "Initialization is incomplete." << std::endl;
+        return -1;
+    }
 
+    int numbytes;
+    if((numbytes = recvfrom(sockfd_, buf, max_size, 0, (struct sockaddr*)&their_addr_, &addr_len_)) == -1)
+        return -1;
+
+    if(their_ip != nullptr) {
+        char s[INET6_ADDRSTRLEN];
+        *their_ip = std::string(inet_ntop(their_addr_.ss_family, GetInAddr((struct sockaddr*)&their_addr_), s, sizeof(s)));
+    }
+    return numbytes;
 }
 
-UdpClient::UdpClient() {}
+void UdpServer::Close(){
+    if(is_init_)
+        close(sockfd_);
+    is_init_ = false;
+}
+
+UdpClient::UdpClient() : is_init_(false){}
 UdpClient::~UdpClient() {}
 
 bool UdpClient::Init(const std::string& addr, int port) {
+    if(is_init_ == true) {
+        std::cerr << "Socket is created." << std::endl
+                  << "If you want to reinit, please call Init after Clear()" << std::endl;
+        return true;
+    }
+    addr_ = addr;
+    port_ = port;
+    std::string string_port;
+    std::stringstream ss;
+    ss << port;
+    string_port = ss.str();
+    ss.str("");
+    ss.clear();
 
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    int rv;
 }
 
 void UdpClient::Close() {

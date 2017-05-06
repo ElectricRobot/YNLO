@@ -91,7 +91,7 @@ public:
      int RecvFrom(char* buf, int max_size, std::string* their_ip = nullptr);
 private:
      bool is_init_;
-     int addr_len_;
+     socklen_t addr_len_;
      struct sockaddr_storage their_addr_;
 };
 
