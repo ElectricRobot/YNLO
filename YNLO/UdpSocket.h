@@ -64,11 +64,7 @@ private:
 inline namespace v2 {
 
 // get sockaddr, IPv4 or IPv6:
-void* GetInAddr(struct sockaddr* sa) {
-    if(sa->sa_family == AF_INET) // IPv4
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+void* GetInAddr(struct sockaddr* sa);
 
 class UdpSocket {
 public:
@@ -102,9 +98,11 @@ public:
 
     bool Init(const std::string& addr, int port);
     void Close() override;
+    int SendTo(char* buf, int size);
 private:
     bool is_init_;
     std::string addr_;
+    struct addrinfo* p_;
 };
 }
 }

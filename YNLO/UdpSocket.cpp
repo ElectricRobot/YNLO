@@ -165,6 +165,12 @@ int UdpServer::TimedRecv(char* msg, size_t max_size, int max_wait_ms) {
 }
 
 inline namespace v2 {
+void* GetInAddr(struct sockaddr* sa) {
+    if(sa->sa_family == AF_INET) // IPv4
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
 UdpSocket::UdpSocket() {}
 UdpSocket::~UdpSocket() {}
 
@@ -279,10 +285,49 @@ bool UdpClient::Init(const std::string& addr, int port) {
     hints.ai_socktype = SOCK_DGRAM;
 
     int rv;
+    if((rv = getaddrinfo(addr_.c_str(), string_port.c_str(), &hints, &servinfo_)) != 0) {
+        std::cerr << "getaddrinfo: " << gai_strerror(rv) << std::endl;
+        return false;
+    }
+
+    // create socket
+    p_ = servinfo_;
+    for(;p_ != NULL; p_ = p_->ai_next) {
+        if((sockfd_ = socket(p_->ai_family, p_->ai_socktype, p_->ai_protocol)) == -1) {
+            std::cerr << "create socket fail, try next" << std::endl;
+            continue;
+        }
+        break;
+    }
+
+    if(p_ == NULL) {
+        std::cout << "failed to bind socket" << std::endl;
+        return false;
+    }
+    is_init_ = true;
+    //freeaddrinfo(servinfo_);
+    return true;
 }
 
 void UdpClient::Close() {
-
+    if(is_init_) {
+        freeaddrinfo(servinfo_);
+        close(sockfd_);
+    }
+    is_init_ = false;
 }
+
+int UdpClient::SendTo(char* buf, int size) {
+    if(is_init_ == false) {
+        std::cerr << "Initialization is incomplete." << std::endl;
+        return -1;
+    }
+
+    int numbytes;
+    if((numbytes = sendto(sockfd_, buf, size, 0, p_->ai_addr, p_->ai_addrlen)) == -1)
+        return -1;
+    return numbytes;
+}
+
 }
 }
