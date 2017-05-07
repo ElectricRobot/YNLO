@@ -26,12 +26,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     UdpSocket.cpp \
-    Except.cpp
+    Except.cpp \
+    Pipeline.cpp
 
 HEADERS += \
     UdpSocket.h \
-    Except.h
+    Except.h \
+    Pipeline.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+LIBS += -pthread
