@@ -6,6 +6,7 @@
 #include <random>
 #include <cassert>
 #include <queue>
+#include "Buffer.h"
 using namespace std;
 
 class Task{

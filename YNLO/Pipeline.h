@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include "Buffer.h"
 
 namespace ynlo {
 
@@ -15,48 +16,38 @@ class Pipeline
 public:
     class BaseNode {
     public:
-        BaseNode()
-            :next_(nullptr) {}
+        BaseNode() {}
         virtual ~BaseNode() {}
-        virtual void MainLoop() = 0;
-        std::shared_ptr<BaseNode> next_;
-        std::mutex mutex_;
-        std::condition_variable* cv_;
+        virtual void MainLoop() {}
     };
-    /*
-    template<class InputData>
-    class TaskNode : public BaseNode
+
+    template<class T>
+    class InputNode : virtual public BaseNode
     {
     public:
-        TaskNode()
-            :write_buffer_ptr(-1), read_buffer_ptr(-1) {}
-        virtual ~TaskNode() {}
-        virtual void MainLoop();
-
-        void WriteToBuffers(const InputData& data) {
-            write_buffer_ptr = (write_buffer_ptr+1)%buffer_size_;
-            buffers_[write_buffer_ptr] = data;
-            read_buffer_ptr = write_buffer_ptr;
-        }
-
-        void WriteToBuffers(InputData&& data) {
-            write_buffer_ptr = (write_buffer_ptr+1)%buffer_size_;
-            buffers_[write_buffer_ptr] = std::move(data);
-            read_buffer_ptr = write_buffer_ptr;
-        }
-
-        InputData* ReadFromBuffers() {
-            if(read_buffer_ptr == -1)
-                return nullptr;
-            return buffers_[read_buffer_ptr];
-        }
-
-    protected:
-        int buffer_size_;
-        int write_buffer_ptr, read_buffer_ptr;
-        std::vector<InputData> buffers_;
+        InputNode() {}
+        virtual ~InputNode() {}
+    private:
+        Buffer<T> buffer_;
     };
-    */
+
+    template<class T>
+    class OutputNode : virtual public BaseNode
+    {
+    public:
+        OutputNode() {}
+        virtual ~OutputNode() {}
+    };
+
+
+    template<class Input, class Output>
+    class TaskNode : public InputNode<Input>, public OutputNode<Output>
+    {
+    public:
+        TaskNode() {}
+        ~TaskNode() {}
+    };
+
 public:
     Pipeline();
     ~Pipeline();
@@ -69,6 +60,7 @@ private:
     std::shared_ptr<BaseNode> root_, cur_;
     std::vector<std::thread> threads_;
     std::condition_variable cv_;
+    std::mutex mutex_;
 };
 
 }

@@ -32,7 +32,8 @@ SOURCES += \
 HEADERS += \
     UdpSocket.h \
     Except.h \
-    Pipeline.h
+    Pipeline.h \
+    Buffer.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
