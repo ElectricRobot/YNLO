@@ -93,15 +93,15 @@ public:
         virtual void MainLoop() override
         {
             while(1) {
-                std::unique_lock<std::mutex> lock(*mutex_);
-                cv_->wait(lock);
+                std::unique_lock<std::mutex> lock(*this->mutex_);
+                this->cv_->wait(lock);
                 lock.unlock();
 
-                Input* input_data_ptr = ReadFromBuffer();
-                if(input_data_ptr && next_)
-                    next_->WriteToBuffer(Process(*input_data_ptr));
+                Input* input_data_ptr = this->ReadFromBuffer();
+                if(input_data_ptr && this->next_)
+                    this->next_->WriteToBuffer(Process(*input_data_ptr));
 
-                if(CheckStopRequest())
+                if(this->CheckStopRequest())
                     break;
             }
         }

@@ -36,7 +36,7 @@ public:
 
     T* ReadFromBuffer() {
         // unique lock is require? maybe not
-        return (read_buffer_ptr == -1)? nullptr:buffers_[read_buffer_ptr];
+        return (read_buffer_ptr == -1)? nullptr:&buffers_[read_buffer_ptr];
     }
 
 private:
