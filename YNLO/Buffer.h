@@ -17,21 +17,18 @@ public:
     ~Buffer() {}
 
     void Reset(int size) {
-        std::unique_lock<std::mutex> lock(mutex_);
         size_ = size;
         buffers_.resize(size_);
         read_buffer_ptr = write_buffer_ptr = -1;
     }
 
     void WriteToBuffer(const T& data) {
-        std::unique_lock<std::mutex> lock(mutex_);
         write_buffer_ptr = (write_buffer_ptr+1)%size_;
         buffers_[write_buffer_ptr] = data;
         read_buffer_ptr = write_buffer_ptr;
     }
 
     void WriteToBuffer(T&& data) {
-        std::unique_lock<std::mutex> lock(mutex_);
         write_buffer_ptr = (write_buffer_ptr+1)%size_;
         buffers_[write_buffer_ptr] = std::move(data);
         read_buffer_ptr = write_buffer_ptr;
@@ -46,7 +43,6 @@ private:
     int size_;
     int read_buffer_ptr, write_buffer_ptr;
     std::vector<T> buffers_;
-    std::mutex mutex_;
 };
 }
 #endif // BUFFER_H
