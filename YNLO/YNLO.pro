@@ -27,16 +27,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     UdpSocket.cpp \
     Except.cpp \
-    Pipeline.cpp
+    Pipeline.cpp \
+    cv/ORBExtractor.cpp
 
 HEADERS += \
     UdpSocket.h \
     Except.h \
     Pipeline.h \
-    Buffer.h
+    Buffer.h \
+    cv/CamParam.h \
+    cv/SparseFeature.h \
+    cv/ORBExtractor.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
 
 LIBS += -pthread
+
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += opencv
