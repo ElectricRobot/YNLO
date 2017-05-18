@@ -37,7 +37,12 @@ HEADERS += \
     Buffer.h \
     cv/CamParam.h \
     cv/SparseFeature.h \
-    cv/ORBExtractor.h
+    cv/ORBExtractor.h \
+    slam/frame.h \
+    slam/mappoint.h \
+    slam/map.h \
+    slam/keyframe.h \
+    slam/tracking.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
