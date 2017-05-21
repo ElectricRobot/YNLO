@@ -30,7 +30,9 @@ SOURCES += \
     Pipeline.cpp \
     cv/ORBExtractor.cpp \
     slam/kittiloader.cpp \
-    slam/eurocloader.cpp
+    slam/eurocloader.cpp \
+    yaml.cpp \
+    util.cpp
 
 HEADERS += \
     UdpSocket.h \
@@ -46,7 +48,9 @@ HEADERS += \
     slam/keyframe.h \
     slam/tracking.h \
     slam/kittiloader.h \
-    slam/eurocloader.h
+    slam/eurocloader.h \
+    yaml.h \
+    util.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

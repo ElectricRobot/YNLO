@@ -1,5 +1,6 @@
 #include "eurocloader.h"
 #include <fstream>
+#include "yaml.h"
 
 namespace ynlo {
 
@@ -19,15 +20,8 @@ void EurocLoader::Init(const std::string& file_path_) {
 
     std::string cam0_file_path = file_path_ + "cam0/";
     std::string cam0_sensor_filename = cam0_file_path + "sensor.yaml";
-    std::ifstream ifs(cam0_sensor_filename);
-    if(!ifs.is_open()) {
-        std::cout << "Cannot open the file: " << cam0_sensor_filename << std::endl;
-        return;
-    }
-    std::string line;
-    while(std::getline(ifs, line)) {
+    YamlParser t(cam0_sensor_filename);
 
-    }
     std::string cam1_file_path = file_path_ + "cam1/";
 }
 
