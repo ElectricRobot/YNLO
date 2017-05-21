@@ -65,4 +65,26 @@ cv::Mat String2CvMat(const std::string& string_mat) {
     return cv_array;
 }
 
+cv::Mat String2CvMat(const std::string& string_mat, int rows, int cols) {
+    cv::Mat cv_mat(rows, cols, CV_32F);
+
+    std::string deal_string_mat = string_mat;
+    deal_string_mat = EraseDummySpace(string_mat);
+    if(deal_string_mat.empty())
+        return cv::Mat();
+    if(deal_string_mat[0] != '[' || deal_string_mat.back() != ']')
+        return cv::Mat();
+
+    deal_string_mat = std::string(deal_string_mat.begin()+1, deal_string_mat.end()-1);
+    std::stringstream ss(deal_string_mat);
+    std::string token;
+    auto ptr = cv_mat.ptr<float>();
+    while(std::getline(ss, token, ',')) {
+        *ptr = stod(token);
+        ++ptr;
+    }
+
+    return cv_mat;
+}
+
 }

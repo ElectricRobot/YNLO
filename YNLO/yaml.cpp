@@ -1,4 +1,5 @@
 #include "yaml.h"
+#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -52,7 +53,49 @@ void YamlParser::Open(const std::string& filename) {
 
         if(value.empty()) {
             // tree node, in this case only deal with the two dimensional matrix
+            std::string line;
+            int cols = 0, rows = 0;
+            for(int i = 0; i < 2; ++i) {
+                std::getline(ifs, line);
+                auto it = std::find(line.begin(), line.end(), ':');
+                if(it == line.end())
+                    assert("error");
+                std::string cols_or_rows(line.begin(), it);
+                cols_or_rows = EraseDummySpace(cols_or_rows);
+                if(cols_or_rows == "cols") {
+                    std::string size_string(it+1, line.end());
+                    cols = stoi(size_string);
+                }
+                else if(cols_or_rows == "rows") {
+                    std::string size_string(it+1, line.end());
+                    rows = stoi(size_string);
+                }
+            }
 
+            std::getline(ifs, line);
+            auto it = std::find(line.begin(), line.end(), ':');
+            if(it == line.end())
+                assert("error");
+
+            std::string data(line.begin(), it);
+            data = EraseDummySpace(data);
+            if(data != "data")
+                assert("error");
+
+            data = std::string(it+1, line.end());
+            data = EraseDummySpace(data);
+            it = std::find(data.begin(), data.end(), ']');
+            while(it == data.end()) {
+                std::string line;
+                std::getline(ifs, line);
+                line = EraseTheStringAfterSpecificChar(line, '#');
+                line = EraseDummySpace(line);
+                data += line;
+                it = std::find(data.begin(), data.end(), ']');
+            }
+            auto value_node_ptr = std::make_shared<MatNode>();
+            value_node_ptr->value = String2CvMat(data, rows, cols);
+            dictionary[key] = value_node_ptr;
         }
         else {
             // one dimention array cv::Mat
@@ -86,10 +129,10 @@ void YamlParser::Open(const std::string& filename) {
                     dictionary[key] = value_node_ptr;
                 }
             }
-
-            std::cout << key << "->";
-            dictionary[key]->PrintValue();
         }
+
+        std::cout << key << "->";
+        dictionary[key]->PrintValue();
 
     }
 

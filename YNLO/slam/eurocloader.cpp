@@ -23,6 +23,7 @@ void EurocLoader::Init(const std::string& file_path_) {
     YamlParser t(cam0_sensor_filename);
 
     std::string cam1_file_path = file_path_ + "cam1/";
+    YamlParser t2(cam1_file_path+"sensor.yaml");
 }
 
 }
