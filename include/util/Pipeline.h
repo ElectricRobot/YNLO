@@ -8,6 +8,7 @@
 #include <vector>
 #include <atomic>
 #include <utility>
+#include <iostream>
 #include "Buffer.h"
 
 namespace ynlo {
@@ -88,7 +89,7 @@ public:
     {
     public:
         TaskNode() {}
-        ~TaskNode() {}
+        virtual ~TaskNode() {}
 
         virtual void MainLoop() override
         {
@@ -113,44 +114,17 @@ public:
     };
 
 public:
-    Pipeline()
-        :size_(0), stop_flag_(false) {}
-    ~Pipeline()
-    {
-        stop_flag_ = true;
-        for(auto& it : threads_) {
-            it.join();
-        }
-    }
+    Pipeline();
+    ~Pipeline();
 
-    void Init() {
-        threads_.resize(size_);
-        for(int i = 0; i < size_; ++i) {
-            threads_[i] = std::thread([&]
-            {
-                nodes_[i]->SetCV(&cv_);
-                nodes_[i]->SetMutex(&mutex_);
-                nodes_[i]->SetStopFlag(&stop_flag_);
-                nodes_[i]->MainLoop();
-            });
-        }
-    }
+    void Init();
+    void Trigger();
+    void AddTask(std::shared_ptr<BaseNode> task);
+    int TaskSize();
 
-    void Trigger() {
-        cv_.notify_all();
-    }
-
-    void AddTask(std::shared_ptr<BaseNode> task) {
-        nodes_.push_back(task);
-        ++size_;
-    }
-
-    int TaskSize() {
-        return size_;
-    }
 private:
     int size_;
-    std::vector<std::shared_ptr<BaseNode> >nodes_;
+    std::vector<std::shared_ptr<BaseNode> > nodes_;
     std::vector<std::thread> threads_;
     std::condition_variable cv_;
     std::mutex mutex_;

@@ -7,8 +7,8 @@ ENDIF()
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O3 -march=native -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native -pthread")
 
 # Check C++11 or C++0x support
 include(CheckCXXCompilerFlag)
@@ -25,9 +25,12 @@ find_package(OpenCV 3.2 REQUIRED)
 
 include_directories(
 ${PROJECT_SOURCE_DIR}
-${PROJECT_SOURCE_DIR}/YNLO
-${PROJECT_SOURCE_DIR}/YNLO/cv
-${PROJECT_SOURCE_DIR}/YNLO/slam
+${PROJECT_SOURCE_DIR}/include
+${PROJECT_SOURCE_DIR}/include/util
+${PROJECT_SOURCE_DIR}/include/socket
+${PROJECT_SOURCE_DIR}/include/container
+${PROJECT_SOURCE_DIR}/include/cv
+${PROJECT_SOURCE_DIR}/include/slam
 ${OpenCV_INCLUDE_DIRS}
 )
 
@@ -35,14 +38,14 @@ ${OpenCV_INCLUDE_DIRS}
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 add_library(${PROJECT_NAME} SHARED
-YNLO/Except.cpp
-YNLO/Pipeline.cpp
-YNLO/UdpSocket.cpp
-YNLO/util.cpp
-YNLO/yaml.cpp
-YNLO/cv/ORBExtractor.cpp
-YNLO/slam/eurocloader.cpp
-YNLO/slam/kittiloader.cpp
+src/util/Except.cpp
+src/util/Pipeline.cpp
+src/socket/UdpSocket.cpp
+src/util/util.cpp
+src/util/yaml.cpp
+src/cv/ORBExtractor.cpp
+src/slam/eurocloader.cpp
+src/slam/kittiloader.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -52,6 +55,6 @@ ${OpenCV_LIBS}
 # Build examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(odometry
-examples/odometry/main.cpp)
-target_link_libraries(odometry ${PROJECT_NAME})
+add_executable(pipeline
+examples/pipeline/main.cpp)
+target_link_libraries(pipeline ${PROJECT_NAME})
