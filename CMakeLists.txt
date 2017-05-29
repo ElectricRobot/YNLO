@@ -46,6 +46,7 @@ src/util/yaml.cpp
 src/cv/ORBExtractor.cpp
 src/slam/eurocloader.cpp
 src/slam/kittiloader.cpp
+src/util/Trace.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

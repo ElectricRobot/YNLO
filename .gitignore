@@ -27,3 +27,10 @@
 *.exe
 *.out
 *.app
+
+.autotools
+.cproject
+.project
+.settings/*
+bin/*
+build/*
