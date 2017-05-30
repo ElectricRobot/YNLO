@@ -19,6 +19,7 @@ void TraceBegin(const char* name);
 void TraceEnd();
 
 void Close();
+
 }
 
 class ScopedTrace {
