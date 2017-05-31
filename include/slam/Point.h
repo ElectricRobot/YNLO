@@ -8,7 +8,8 @@
 #ifndef POINT_H
 #define POINT_H
 #include <vector>
-#include <Eigen/Dense>
+#include <Eigen/Core>
+#include "Feature.h"
 
 namespace ynlo {
 
@@ -19,6 +20,10 @@ class Point {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using SPtr = std::shared_ptr<Point>;
+    using WPtr = std::weak_ptr<Point>;
+    using UPtr = std::unique_ptr<Point>;
+
     enum PointType {
         TYPE_DELETED,
         TYPE_CANDIDATE,
@@ -28,18 +33,18 @@ public:
 
     /* Constructor */
     Point();
-    Point(const Point&) = delete;
+    Point(const Point&);
     virtual ~Point();
 
     /* Assignment */
-    Point& operator=(const Point&) = delete;
+    Point& operator=(const Point&);
 
     static int point_counter_;
     int id_;
     Eigen::Vector3d pos_;
     Eigen::Vector3d normal_;
     Eigen::Matrix3d normal_information_;
-    std::vector<Feature*> obs_;
+    std::vector<Feature::WPtr> obs_;
     PointType type_;
 };
 

@@ -1,7 +1,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 #include <string>
+#include <memory>
 #include <opencv2/opencv.hpp>
+
+#define SMART_PTR(T) using SPtr = std::shared_ptr<T>;\
+    using WPtr = std::weak_ptr<T>;\
+    using UPtr = std::unique_ptr<T>;
 
 namespace ynlo {
 std::string EraseDummySpace(const std::string& line);
