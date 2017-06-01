@@ -13,6 +13,7 @@
 #include <sophus/se3.hpp>
 #include "Camera.h"
 #include "Feature.h"
+#include "util.h"
 
 namespace ynlo {
 
@@ -24,9 +25,7 @@ class Frame {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using SPtr = std::shared_ptr<Frame>;
-    using WPtr = std::weak_ptr<Frame>;
-    using UPtr = std::unique_ptr<Frame>;
+    SMART_PTR(Frame)
 
     /* Constructor */
     Frame();
@@ -39,7 +38,7 @@ public:
     static int frame_counter_;              //!< Counts the number of created frames. Used to set the unique id.
     int id_;                                //!< Unique id of the frame.
     double timestamp_;                      //!< Timestamp of when the image was recorded.
-    AbstractCamera::SPtr cam_;              //!< Camera model.
+    //AbstractCamera::SPtr cam_;              //!< Camera model.
     Sophus::SE3d Tfw_;                      //!< Transform (f)rame from (w)orld.
     Eigen::Matrix<double,6,6> cov_;         //!< Covariance.
     std::vector<cv::Mat> img_pyr_;          //!< Image Pyramid.

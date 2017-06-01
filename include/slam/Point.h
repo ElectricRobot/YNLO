@@ -10,6 +10,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include "Feature.h"
+#include "util.h"
 
 namespace ynlo {
 
@@ -20,9 +21,7 @@ class Point {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using SPtr = std::shared_ptr<Point>;
-    using WPtr = std::weak_ptr<Point>;
-    using UPtr = std::unique_ptr<Point>;
+    SMART_PTR(Point)
 
     enum PointType {
         TYPE_DELETED,

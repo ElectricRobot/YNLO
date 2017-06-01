@@ -7,62 +7,52 @@
 
 #ifndef CAMERA_H
 #define CAMERA_H
-#include <array>
 #include <memory>
 #include <opencv2/core.hpp>
-#include <Eigen/Core>
 #include "util.h"
 
 namespace ynlo {
 
-// this class copy from vikit library made by uzh-rpg
-class AbstractCamera {
+class Camera {
 public:
-    SMART_PTR(AbstractCamera)
+    SMART_PTR(Camera)
 
-    AbstractCamera();
-    AbstractCamera(int width, int height);
-    virtual ~AbstractCamera();
+    /* Constructor */
+    Camera() {}
+    virtual ~Camera() {}
 
-    // Project from pixels to world coordiantes. Returns a bearing vector of unit length.
-    virtual Eigen::Vector3d Cam2World(const double& x, const double& y) const = 0;
-    virtual Eigen::Vector3d Cam2World(const Eigen::Vector2d& px) const = 0;
+    /* Assignment */
 
-    virtual Eigen::Vector2d World2Cam(const Eigen::Vector3d& x3Dc) const = 0;
-    // project unit plane coordinates to camera coordinates
-    virtual Eigen::Vector2d World2Cam(const Eigen::Vector2d& uv) const = 0;
+    /* getter */
+    const cv::Size& ImageSize() const;
+    const cv::Mat& K() const;
+    const cv::Mat& D() const;
+    /* setter */
+    void SetImageSize(const cv::Size& image_size);
+    void SetCameraModel(const cv::Mat& K, const cv::Mat& D);
 
-    // unknow but copy...
-    virtual double ErrorMultiplier2() const = 0;
-    virtual double ErrorMultiplier() const = 0;
+    /* Method */
+    virtual void UndistortImage(cv::InputArray distorted, cv::OutputArray undistorted) = 0;
+    virtual void UndistortPoints(cv::InputArray distorted, cv::OutputArray undistorted) = 0;
 
-    int Width() const;
-    int Height() const;
-
-    bool IsInFrame(const Eigen::Vector2i& obs, int boundary = 0) const;
-    bool IsInFrame(const Eigen::Vector2i& obs, int boundary, int level) const;
-protected:
-    int width_;
-    int height_;
-};
-
-
-class PinholeCamera : public AbstractCamera {
-public:
-    SMART_PTR(PinholeCamera)
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    // TODO
 private:
-    double fx_, fy_;
-    double cx_, cy_;
-    bool distortion_;
-    std::array<double,5> d_;
-    cv::Mat cvK_, cvD_;
-    cv::Mat undist_map1_, undist_map2_;
-    Eigen::Matrix3d K_;
-    Eigen::Matrix3d K_inv_;
+    virtual void InitUndistortMap() = 0;
+
+    cv::Size image_size_;
+    cv::Mat K_, D_;
+    cv::Mat undistort_map1_, undistort_map2_;
 };
 
+class PinholeCamera : public Camera
+{
+public:
+
+};
+
+class FisheyeCamera : public Camera {
+public:
+
+};
 }
 
 #endif /* CAMERA_H */
