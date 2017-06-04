@@ -50,6 +50,7 @@ src/slam/eurocloader.cpp
 src/slam/kittiloader.cpp
 src/socket/UdpSocket.cpp
 src/util/Trace.cpp
+src/cv/Camera.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -59,6 +60,6 @@ ${OpenCV_LIBS}
 # Build examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(pipeline
-examples/pipeline/main.cpp)
-target_link_libraries(pipeline ${PROJECT_NAME})
+add_executable(camera
+examples/camera/main.cpp)
+target_link_libraries(camera ${PROJECT_NAME})
