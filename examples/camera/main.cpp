@@ -39,9 +39,7 @@ int main(int argc, char** argv) {
     image_size.height = img.rows;
     image_size.width = img.cols;
 
-    ynlo::Camera::SPtr cam = make_shared<ynlo::PinholeCamera>();
-    cam->SetImageSize(image_size);
-    cam->SetCameraModel(K, D);
+    ynlo::Camera::SPtr cam = make_shared<ynlo::PinholeCamera>(image_size, K, D);
     cv::Mat undistort_img;
     cam->UndistortImage(img, undistort_img);
 

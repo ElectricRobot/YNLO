@@ -18,6 +18,7 @@ public:
 
     /* Constructor */
     Camera();
+    Camera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D);
     Camera(const Camera&);
     Camera(Camera&&);
     virtual ~Camera();
@@ -44,6 +45,7 @@ protected:
     cv::Size image_size_;
     cv::Mat K_, D_;
     cv::Mat undistort_map1_, undistort_map2_;
+    bool is_init_ = false;
 };
 
 class PinholeCamera : public Camera
@@ -53,6 +55,7 @@ public:
 
     /* Constructor */
     PinholeCamera();
+    PinholeCamera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D);
     PinholeCamera(const PinholeCamera&);
     PinholeCamera(PinholeCamera&&);
     ~PinholeCamera();
@@ -73,6 +76,7 @@ public:
 
     /* Consturctor */
     FisheyeCamera();
+    FisheyeCamera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D);
     FisheyeCamera(const FisheyeCamera&);
     FisheyeCamera(FisheyeCamera&&);
     ~FisheyeCamera();

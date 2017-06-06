@@ -5,23 +5,33 @@
  *      Author: liu
  */
 #include "Camera.h"
-
+#include <cassert>
 namespace ynlo {
 
 Camera::Camera() {
 }
 
+Camera::Camera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D) {
+    assert(image_size.width > 0 || image_size.height > 0);
+    assert(!K.empty());
+    image_size_ = image_size;
+    K_ = K.clone();
+    D_ = D.clone();
+}
+
 Camera::Camera(const Camera& rhs) :
         image_size_(rhs.image_size_), K_(rhs.K_.clone()), D_(rhs.D_.clone()),
         undistort_map1_(rhs.undistort_map1_.clone()),
-        undistort_map2_(rhs.undistort_map2_.clone())
+        undistort_map2_(rhs.undistort_map2_.clone()),
+        is_init_(rhs.is_init_)
 {
 }
 
 Camera::Camera(Camera&& rhs) :
         image_size_(std::move(rhs.image_size_)), K_(std::move(rhs.K_)), D_(std::move(rhs.D_)),
         undistort_map1_(std::move(rhs.undistort_map1_)),
-        undistort_map2_(std::move(rhs.undistort_map2_))
+        undistort_map2_(std::move(rhs.undistort_map2_)),
+        is_init_(std::move(rhs.is_init_))
 {
 }
 
@@ -34,6 +44,7 @@ Camera& Camera::operator=(const Camera& rhs) {
     D_ = rhs.D_.clone();
     undistort_map1_ = rhs.undistort_map1_.clone();
     undistort_map2_ = rhs.undistort_map2_.clone();
+    is_init_ = rhs.is_init_;
     return *this;
 }
 
@@ -43,6 +54,7 @@ Camera& Camera::operator=(Camera&& rhs) {
     D_ = std::move(rhs.D_);
     undistort_map1_ = std::move(rhs.undistort_map1_);
     undistort_map2_ = std::move(rhs.undistort_map2_);
+    is_init_ = std::move(rhs.is_init_);
     return *this;
 }
 
@@ -60,21 +72,28 @@ const cv::Mat& Camera::D() const {
 
 void Camera::SetImageSize(const cv::Size& image_size) {
     image_size_ = image_size;
+    if(!K_.empty())
+        InitUndistortMap();
 }
 
 void Camera::SetCameraModel(const cv::Mat& K, const cv::Mat& D) {
-    if(image_size_.height == 0 || image_size_.width == 0)
-        std::cerr << "Please set the image_size before setting camera model." << std::endl;
     K_ = K.clone();
     D_ = D.clone();
-    InitUndistortMap();
+    if(image_size_.height != 0 || image_size_.width != 0)
+        InitUndistortMap();
 }
 
 void Camera::UndistortImage(cv::InputArray distorted, cv::OutputArray undistorted, int interpolation) {
-    cv::remap(distorted, undistorted, undistort_map1_, undistort_map2_, interpolation);
+    if(is_init_)
+        cv::remap(distorted, undistorted, undistort_map1_, undistort_map2_, interpolation);
 }
 
 PinholeCamera::PinholeCamera() : Camera::Camera() {};
+PinholeCamera::PinholeCamera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D) : Camera::Camera(image_size, K, D)
+{
+    InitUndistortMap();
+}
+
 PinholeCamera::PinholeCamera(const PinholeCamera& rhs)
     : Camera::Camera(rhs)
 {}
@@ -102,9 +121,14 @@ void PinholeCamera::UndistortPoints(cv::InputArray distorted, cv::OutputArray un
 
 void PinholeCamera::InitUndistortMap() {
     cv::initUndistortRectifyMap(K_, D_, cv::noArray(), K_, image_size_, CV_32F, undistort_map1_, undistort_map2_);
+    is_init_ = true;
 }
 
 FisheyeCamera::FisheyeCamera(): Camera::Camera() {}
+FisheyeCamera::FisheyeCamera(const cv::Size& image_size, const cv::Mat& K, const cv::Mat& D) : Camera::Camera(image_size, K, D)
+{
+    InitUndistortMap();
+}
 FisheyeCamera::FisheyeCamera(const FisheyeCamera& rhs)
     : Camera::Camera(rhs)
 {}
@@ -132,6 +156,7 @@ void FisheyeCamera::UndistortPoints(cv::InputArray distorted, cv::OutputArray un
 
 void FisheyeCamera::InitUndistortMap() {
     cv::fisheye::initUndistortRectifyMap(K_, D_, cv::noArray(), K_, image_size_, CV_32F, undistort_map1_, undistort_map2_);
+    is_init_ = true;
 }
 
 }

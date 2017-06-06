@@ -130,13 +130,40 @@ void YamlParser::Open(const std::string& filename) {
                 }
             }
         }
-
+#if 0
         std::cout << key << "->";
         dictionary[key]->PrintValue();
-
+#endif
     }
 
     ifs.close();
+}
+
+YamlParser::BaseNode& YamlParser::operator[](const std::string& key) {
+    auto it = dictionary.find(key);
+    assert(it != dictionary.end());
+    return *it->second;
+}
+
+void YamlParser::BaseNode::operator>>(std::string& data) {
+    auto it = dynamic_cast<YamlParser::StringNode*>(this);
+    if(it != nullptr) {
+        data = it->value;
+    }
+}
+
+void YamlParser::BaseNode::operator>>(double& data) {
+    auto it = dynamic_cast<YamlParser::NumNode*>(this);
+    if(it != nullptr) {
+        data = it->value;
+    }
+}
+
+void YamlParser::BaseNode::operator>>(cv::Mat& data) {
+    auto it = dynamic_cast<YamlParser::MatNode*>(this);
+    if(it != nullptr) {
+        data = it->value;
+    }
 }
 
 }

@@ -60,6 +60,6 @@ ${OpenCV_LIBS}
 # Build examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(camera
-examples/camera/main.cpp)
-target_link_libraries(camera ${PROJECT_NAME})
+add_executable(odometry
+examples/odometry/main.cpp)
+target_link_libraries(odometry ${PROJECT_NAME})

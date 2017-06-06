@@ -9,35 +9,40 @@
 
 namespace ynlo {
 
-class YamlParser
-{
+class YamlParser {
 public:
     class BaseNode {
     public:
         BaseNode() = default;
         virtual ~BaseNode() = default;
-        virtual void PrintValue() {}
+
+        virtual void PrintValue() {
+        }
+
+        void operator>>(std::string& data);
+
+        void operator>>(double& data);
+
+        void operator>>(cv::Mat& data);
     };
 
-    class StringNode : public BaseNode {
+    class StringNode: public BaseNode {
     public:
         void PrintValue() override {
             std::cout << value << std::endl;
         }
-
         std::string value;
     };
 
-    class NumNode : public BaseNode {
+    class NumNode: public BaseNode {
     public:
         void PrintValue() override {
             std::cout << value << std::endl;
         }
-
         double value;
     };
 
-    class MatNode : public BaseNode {
+    class MatNode: public BaseNode {
     public:
         void PrintValue() override {
             std::cout << value << std::endl;
@@ -45,7 +50,7 @@ public:
         cv::Mat value;
     };
 
-    class TreeNode : public BaseNode {
+    class TreeNode: public BaseNode {
     public:
         std::vector<std::string> keys;
         std::vector<std::shared_ptr<BaseNode>> children;
@@ -57,6 +62,8 @@ public:
     ~YamlParser();
 
     void Open(const std::string& filename);
+
+    BaseNode& operator[](const std::string& key);
 
     std::unordered_map<std::string, std::shared_ptr<BaseNode>> dictionary;
 };
