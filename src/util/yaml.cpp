@@ -15,6 +15,9 @@ YamlParser::YamlParser(const std::string& filename) {
 YamlParser::~YamlParser() {}
 
 void YamlParser::Open(const std::string& filename) {
+
+    dictionary.clear();
+
     std::ifstream ifs(filename);
     if(!ifs.is_open()) {
         std::cerr << "Cannot open the file: " << filename << std::endl;
