@@ -51,6 +51,7 @@ src/slam/kittiloader.cpp
 src/socket/UdpSocket.cpp
 src/util/Trace.cpp
 src/cv/Camera.cpp
+src/cv/cvutil.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
