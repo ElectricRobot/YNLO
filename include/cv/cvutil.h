@@ -11,6 +11,8 @@
 
 namespace ynlo {
 
+std::vector<cv::Mat> Pyramid(cv::Mat& img, int levels);
+
 }
 
 #endif /* CVUTIL_H */

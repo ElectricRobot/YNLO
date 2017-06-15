@@ -1,9 +1,10 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <opencv2/opencv.hpp>
 #include "slam/kittiloader.h"
 #include "slam/eurocloader.h"
-#include "util.h"
+#include "cvutil.h"
 using namespace std;
 using namespace cv;
 
@@ -21,8 +22,13 @@ int main(int argc, char **argv)
     for(int i = 0, n = loader.SequenceSize(); i < n; ++i) {
         cv::Mat left_image = loader.LeftImage(i);
         cv::Mat right_image = loader.RightImage(i);
-        cv::imshow("L", left_image);
-        cv::imshow("R", right_image);
+        auto img_pyd = ynlo::Pyramid(left_image, 5);
+
+        for(int i = 0, n = img_pyd.size(); i < n; ++i) {
+            std::stringstream ss;
+            ss << i;
+            cv::imshow(ss.str(), img_pyd[i]);
+        }
         cv::waitKey(0);
     }
 
