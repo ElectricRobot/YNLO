@@ -24,12 +24,7 @@ int main(int argc, char **argv)
         cv::Mat right_image = loader.RightImage(i);
         auto img_pyd = ynlo::Pyramid(left_image, 5);
 
-        for(int i = 0, n = img_pyd.size(); i < n; ++i) {
-            std::stringstream ss;
-            ss << i;
-            cv::imshow(ss.str(), img_pyd[i]);
-        }
-        cv::waitKey(0);
+        ynlo::StrongFastCorner(left_image, 20, 32, 32);
     }
 
     return 0;
