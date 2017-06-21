@@ -21,10 +21,11 @@ int main(int argc, char **argv)
 
     for(int i = 0, n = loader.SequenceSize(); i < n; ++i) {
         cv::Mat left_image = loader.LeftImage(i);
-        cv::Mat right_image = loader.RightImage(i);
-        auto img_pyd = ynlo::Pyramid(left_image, 5);
 
-        ynlo::StrongFastCorner(left_image, 20, 32, 32);
+        std::vector<cv::KeyPoint> kps;
+        std::vector<cv::Mat> img_pyd;
+        ynlo::BasicImageProcessing(left_image, 5, 20, 64, kps, img_pyd);
+
     }
 
     return 0;

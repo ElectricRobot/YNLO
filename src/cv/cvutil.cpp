@@ -65,7 +65,7 @@ float ShiTomasiScore(const cv::Mat& img, int u, int v) {
 }
 
 std::vector<cv::KeyPoint> StrongFastCorner(const cv::Mat& img, int fast_th, int col_grid_window_size, int row_grid_window_size) {
-    assert(img.type() == CV_8U);
+    assert(img.type() == CV_8UC1);
 
     std::vector<cv::KeyPoint> kps;
     cv::FAST(img, kps, fast_th);
@@ -107,8 +107,42 @@ std::vector<cv::KeyPoint> StrongFastCorner(const cv::Mat& img, int fast_th, int 
     return strong_kps;
 }
 
-void BasicImageProcessing(cv::Mat& img, int levels, int fast_th, int grid_size, std::vector<cv::KeyPoint>& kps, std::vector<cv::Mat>& img_pyd) {
+void BasicImageProcessing(cv::Mat& img, int levels, int fast_th, int grid_window_size, std::vector<cv::KeyPoint>& kps, std::vector<cv::Mat>& img_pyd) {
 
+    img_pyd = Pyramid(img, levels);
+
+    std::vector<std::vector<cv::KeyPoint>> kps_by_levels;
+    kps_by_levels.resize(levels);
+
+    for(int i = 0; i < levels; ++i) {
+        kps_by_levels[i] = StrongFastCorner(img_pyd[i], fast_th, grid_window_size, grid_window_size);
+    }
+
+    kps.clear();
+
+#if 0
+    std::vector<cv::Mat> debug_draw;
+    debug_draw.resize(levels);
+#endif
+
+    for(int i = 0; i < levels; ++i) {
+        float scale = (1 << i);
+        for(int j = 0, m = kps_by_levels[i].size(); j < m; ++j) {
+            auto kp = kps_by_levels[i][j];
+            kp.pt *= scale;
+            kp.octave = i;
+            kps.push_back(kp);
+        }
+#if 0
+        cv::drawKeypoints(img_pyd[i], kps_by_levels[i], debug_draw[i], cv::Scalar(0,255,0));
+        std::stringstream ss;
+        ss << i;
+        cv::imshow(ss.str(), debug_draw[i]);
+#endif
+    }
+#if 0
+    cv::waitKey(0);
+#endif
 }
 
 
