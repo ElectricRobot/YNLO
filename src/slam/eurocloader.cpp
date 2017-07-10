@@ -27,15 +27,15 @@ void EurocLoader::Init(const std::string& file_path_) {
     yaml["T_BS"] >> Tbc_[0];
 
     yaml["resolution"] >> resolution;
-    image_size_.width = resolution.at<float>(0);
-    image_size_.height = resolution.at<float>(1);
+    image_size_.width = resolution.at<double>(0);
+    image_size_.height = resolution.at<double>(1);
 
     yaml["intrinsics"] >> intrinsics;
-    K_[0] = cv::Mat::eye(3,3,CV_32F);
-    K_[0].at<float>(0,0) = intrinsics.at<float>(0);
-    K_[0].at<float>(1,1) = intrinsics.at<float>(1);
-    K_[0].at<float>(0,2) = intrinsics.at<float>(2);
-    K_[0].at<float>(1,2) = intrinsics.at<float>(3);
+    K_[0] = cv::Mat::eye(3,3,CV_64F);
+    K_[0].at<double>(0,0) = intrinsics.at<double>(0);
+    K_[0].at<double>(1,1) = intrinsics.at<double>(1);
+    K_[0].at<double>(0,2) = intrinsics.at<double>(2);
+    K_[0].at<double>(1,2) = intrinsics.at<double>(3);
 
     yaml["distortion_coefficients"] >> D_[0];
 
@@ -44,11 +44,11 @@ void EurocLoader::Init(const std::string& file_path_) {
     yaml.Open(cam1_sensor_filename);
     yaml["T_BS"] >> Tbc_[1];
     yaml["intrinsics"] >> intrinsics;
-    K_[1] = cv::Mat::eye(3,3,CV_32F);
-    K_[1].at<float>(0,0) = intrinsics.at<float>(0);
-    K_[1].at<float>(1,1) = intrinsics.at<float>(1);
-    K_[1].at<float>(0,2) = intrinsics.at<float>(2);
-    K_[1].at<float>(1,2) = intrinsics.at<float>(3);
+    K_[1] = cv::Mat::eye(3,3,CV_64F);
+    K_[1].at<double>(0,0) = intrinsics.at<double>(0);
+    K_[1].at<double>(1,1) = intrinsics.at<double>(1);
+    K_[1].at<double>(0,2) = intrinsics.at<double>(2);
+    K_[1].at<double>(1,2) = intrinsics.at<double>(3);
 
     yaml["distortion_coefficients"] >> D_[1];
 
