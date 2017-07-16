@@ -145,5 +145,162 @@ void BasicImageProcessing(cv::Mat& img, int levels, int fast_th, int grid_window
 #endif
 }
 
+std::vector<std::pair<int, int>> SparseStereoMatching(
+        const std::vector<cv::Mat>& img_pyd_l, std::vector<cv::KeyPoint>& kps_l,
+        const std::vector<cv::Mat>& img_pyd_r, std::vector<cv::KeyPoint>& kps_r,
+        const cv::Mat& Kl, const cv::Mat& Dl, const cv::Mat& Rl, const cv::Mat& Pl,
+        const cv::Mat& Kr, const cv::Mat& Dr, const cv::Mat& Rr, const cv::Mat& Pr
+        )
+{
+    std::vector<cv::Point2f> un_kps_l;
+    std::vector<cv::Point2f> un_kps_r;
+    std::vector<std::pair<int, int>> matches;
+    cv::KeyPoint::convert(kps_l, un_kps_l);
+    cv::KeyPoint::convert(kps_r, un_kps_r);
+    cv::undistortPoints(un_kps_l, un_kps_l, Kl, Dl, Rl, Pl);
+    cv::undistortPoints(un_kps_r, un_kps_r, Kr, Dr, Rr, Pr);
+
+    // epipolar line constrain
+    cv::Size image_size = img_pyd_l[0].size();
+    std::vector<std::vector<size_t>> table(image_size.height);
+
+    for(int i = 0, n = un_kps_r.size(); i < n; ++i) {
+        cv::Point2f& pt = un_kps_r[i];
+        int level = kps_r[i].octave;
+        int scale = 1 << level;
+        double r = 2.0f*scale;
+        int minr = std::floor(pt.y - r);
+        int maxr = std::ceil(pt.y + r);
+
+        for(int y = minr; y <= maxr; ++y) {
+            if(y < 0 || y >= image_size.height)
+                continue;
+            table[y].push_back(i);
+        }
+    }
+
+    // matching
+    for(int iL = 0, nL = kps_l.size(); iL < nL; ++iL) {
+        const cv::KeyPoint& kpl = kps_l[iL];
+        const cv::Point2f& un_kpl = un_kps_l[iL];
+        int level = kpl.octave;
+        int scale = (1 << level);
+        double inv_scale = 1.0f/scale;
+        const cv::Mat& imgl = img_pyd_l[level];
+        cv::Point2f scale_kpl = kpl.pt*inv_scale;
+        int w = 5;
+
+        if(scale_kpl.x - w < 0 || scale_kpl.y - w < 0 || scale_kpl.x + w >= imgl.cols || scale_kpl.y + w >= imgl.rows)
+            continue;
+
+        cv::Mat IL(imgl.colRange(scale_kpl.x - w, scale_kpl.x + w + 1).rowRange(scale_kpl.y - w, scale_kpl.y + w + 1));
+        IL.convertTo(IL, CV_64F);
+        IL = IL - cv::Mat::eye(IL.size(), CV_64F)*IL.at<double>(w, w);
+
+        if(un_kpl.y < 0 || un_kpl.y >= image_size.height)
+            continue;
+
+        const std::vector<size_t>& candidate = table[un_kpl.y];
+
+        double best_score = 3000, second_score = best_score;
+        int best_iR = -1;
+        for(int iC = 0, nC = candidate.size(); iC < nC; ++iC) {
+            size_t iR = candidate[iC];
+            const cv::KeyPoint& kpr = kps_r[iR];
+
+            if(kpr.octave != level)
+                continue;
+
+            cv::Mat imgr = img_pyd_r[level];
+            cv::Point2f scale_kpr = kpr.pt * inv_scale;
+
+            if(scale_kpr.x - w < 0 || scale_kpr.y - w < 0 || scale_kpr.x + w >= imgr.cols || scale_kpr.y + w >= imgr.rows)
+                continue;
+
+            cv::Mat IR(imgl.colRange(scale_kpl.x - w, scale_kpl.x + w + 1).rowRange(scale_kpl.y - w, scale_kpl.y + w + 1));
+            IR.convertTo(IR, CV_64F);
+            IR = IR - cv::Mat::eye(IR.size(), CV_64F)*IR.at<double>(w, w);
+            double score = cv::norm(IL, IR, cv::NORM_L1);
+
+            if(score < best_score) {
+                second_score = best_score;
+                best_score = score;
+                best_iR = iR;
+            }
+            else if(score < second_score) {
+                second_score = score;
+            }
+        }
+
+        if(best_iR == -1)
+            continue;
+
+        double ratio = 0.6f;
+        if(best_score > second_score*ratio)
+            continue;
+
+        const cv::Point2f& un_kpr = un_kps_r[best_iR];
+        double disparity = un_kpl.x - un_kpr.x;
+        const double& fx = Pl.at<const double>(0,0);
+
+        if(disparity < 0.0f || disparity >= fx) {
+            continue;
+        }
+
+        matches.push_back(std::make_pair(iL, best_iR));
+    }
+
+    // patch alignment (subpixel refinement)
+    std::vector<cv::Point2f> align_pts(kps_r.size());
+    std::vector<std::pair<int, int>> align_matches;
+    for(auto& it : matches) {
+        int level = kps_l[it.first].octave;
+        double scale = (1 << level);
+        double inv_scale = 1.0f/scale;
+        cv::Mat img1 = img_pyd_l[level];
+        cv::Mat img2 = img_pyd_r[level];
+        std::vector<cv::Point2f> kp1{kps_l[it.first].pt};
+        kp1[0] *= inv_scale;
+        std::vector<cv::Point2f> kp2{kps_r[it.second].pt};
+        kp2[0] *= inv_scale;
+
+        std::vector<uchar> status;
+        std::vector<float> err;
+
+        cv::calcOpticalFlowPyrLK(img1, img2, kp1, kp2, status, err, cv::Size(11,11),
+                0, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-5),
+                cv::OPTFLOW_USE_INITIAL_FLOW);
+
+        if(status[0] == 0 || err[0] > 20)
+            continue;
+
+        kp2[0] *= scale;
+        align_pts[it.second] = kp2[0];
+        align_matches.push_back(std::make_pair(it.first, it.second));
+    }
+
+#if 0
+    cv::Mat drawl, drawr;
+    cv::cvtColor(img_pyd_l[0], drawl, CV_GRAY2BGR);
+    cv::cvtColor(img_pyd_r[0], drawr, CV_GRAY2BGR);
+
+    for(auto& it : align_matches) {
+        cv::circle(drawl, kps_l[it.first].pt, 2, cv::Scalar(0,255,0),-1);
+        cv::circle(drawr, kps_r[it.second].pt, 2, cv::Scalar(0,255,0),-1);
+        cv::line(drawr, kps_r[it.second].pt, align_pts[it.second], cv::Scalar(255,0,0),2);
+        cv::circle(drawr, align_pts[it.second], 2, cv::Scalar(0,0,255),-1);
+    }
+
+    cv::imshow("drawl", drawl);
+    cv::imshow("drawr", drawr);
+    cv::waitKey(0);
+#endif
+
+    for(auto& it : align_matches) {
+        kps_r[it.second].pt = align_pts[it.second];
+    }
+    return align_matches;
+}
+
 
 }

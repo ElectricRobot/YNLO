@@ -61,6 +61,6 @@ ${OpenCV_LIBS}
 # Build examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(odometry
-examples/odometry/main.cpp)
-target_link_libraries(odometry ${PROJECT_NAME})
+add_executable(SparseStereoMatching
+examples/SparseStereoMatching/main.cpp)
+target_link_libraries(SparseStereoMatching ${PROJECT_NAME})

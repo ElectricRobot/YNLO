@@ -38,9 +38,8 @@ int main(int argc, char **argv)
         ynlo::BasicImageProcessing(left_image, 5, 20, 64, kps_l, img_pyd_l);
         ynlo::BasicImageProcessing(right_image, 5, 20, 64, kps_r, img_pyd_r);
 
-        std::vector<cv::Point2f> un_kps_l, un_kps_r;
         auto matches = ynlo::SparseStereoMatching(img_pyd_l, kps_l, img_pyd_r, kps_r,
-                Kl, Dl, Rl, Pl, Kr, Dr, Rr, Pr, un_kps_l, un_kps_r);
+                Kl, Dl, Rl, Pl, Kr, Dr, Rr, Pr);
 
         std::vector<cv::DMatch> draw_match;
         for(auto& it : matches) {
